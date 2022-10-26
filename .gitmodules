@@ -1,0 +1,12 @@
+[submodule "Vendor/glfw"]
+	path = Vendor/glfw
+	url = https://github.com/glfw/glfw
+[submodule "Vendor/imgui"]
+	path = Vendor/imgui
+	url = https://github.com/ocornut/imgui
+[submodule "Vendor/glm"]
+	path = Vendor/glm
+	url = https://github.com/g-truc/glm
+[submodule "Vendor/assimp"]
+	path = Vendor/assimp
+	url = https://github.com/assimp/assimp
