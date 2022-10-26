@@ -3,3 +3,4 @@ build/
 .vscode/
 Data/Model/
 Data/Texture/
+Renderer/stb_image.h
