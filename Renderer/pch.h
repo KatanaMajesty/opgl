@@ -13,6 +13,7 @@
 #include <unordered_map>
 #include <array>
 #include <vector>
+#include <functional>
 
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>

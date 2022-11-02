@@ -3,7 +3,15 @@
 struct Material
 {
     sampler2D t_diffuse1;
+    sampler2D t_diffuse2;
+    sampler2D t_diffuse3;
+    sampler2D t_diffuse4;
+
     sampler2D t_specular1;
+    sampler2D t_specular2;
+    sampler2D t_specular3;
+    sampler2D t_specular4;
+
     float shininess;
 };
 
@@ -31,7 +39,7 @@ struct SpotLight
 
 uniform Material u_material;
 uniform DirectionalLight u_dirLight;
-uniform SpotLight u_spotLight;
+// uniform SpotLight u_spotLight;
 uniform bool u_enableLighting;
 uniform vec3 u_cameraPos;
 
@@ -56,25 +64,25 @@ vec3 calculateDirLight(DirectionalLight light, vec3 t_diff, vec3 t_spec)
     return (ambient + diffuse + specular);
 }
 
-vec3 calculateSpotLight(SpotLight light, vec3 t_diff, vec3 t_spec)
-{
-    float dist = length(v_uv - light.pos);
-    float attenuation = 1.0 / (light.clq.x + light.clq.y * dist + light.clq.z * (dist * dist));
-    vec3 cameraToVertex = normalize(v_uv - u_cameraPos);
-    vec3 lightToVertex = normalize(v_uv - light.pos);
+// vec3 calculateSpotLight(SpotLight light, vec3 t_diff, vec3 t_spec)
+// {
+//     float dist = length(v_uv - light.pos);
+//     float attenuation = 1.0 / (light.clq.x + light.clq.y * dist + light.clq.z * (dist * dist));
+//     vec3 cameraToVertex = normalize(v_uv - u_cameraPos);
+//     vec3 lightToVertex = normalize(v_uv - light.pos);
 
-    float theta = dot(lightToVertex, light.dir);
-    float eps = light.cutoff - light.outerCutoff;
-    float intensity = clamp((theta - light.outerCutoff) / eps, 0.0, 1.0);
+//     float theta = dot(lightToVertex, light.dir);
+//     float eps = light.cutoff - light.outerCutoff;
+//     float intensity = clamp((theta - light.outerCutoff) / eps, 0.0, 1.0);
 
-    vec3 diffuse = light.diffuse * max(dot(v_norm, -light.dir), 0.0) * t_diff * attenuation * intensity;
+//     vec3 diffuse = light.diffuse * max(dot(v_norm, -light.dir), 0.0) * t_diff * attenuation * intensity;
 
-    vec3 reflectDir = reflect(normalize(light.dir), v_norm);
-    float specComp = pow(max(dot(reflectDir, -cameraToVertex), 0.0), u_material.shininess);
-    vec3 specular = light.specular * specComp * t_spec * attenuation * intensity;
+//     vec3 reflectDir = reflect(normalize(light.dir), v_norm);
+//     float specComp = pow(max(dot(reflectDir, -cameraToVertex), 0.0), u_material.shininess);
+//     vec3 specular = light.specular * specComp * t_spec * attenuation * intensity;
 
-    return (diffuse + specular);
-}
+//     return (diffuse + specular);
+// }
 
 void main()
 {
@@ -84,7 +92,7 @@ void main()
         vec3 t_diff = vec3(texture(u_material.t_diffuse1, v_textureUv));
         vec3 t_spec = vec3(texture(u_material.t_specular1, v_textureUv));
         r += calculateDirLight(u_dirLight, t_diff, t_spec);
-        r += calculateSpotLight(u_spotLight, t_diff, t_spec);
+        // r += calculateSpotLight(u_spotLight, t_diff, t_spec);
     }
     else {
         r = vec3(texture(u_material.t_diffuse1, v_textureUv));

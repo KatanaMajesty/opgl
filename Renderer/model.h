@@ -18,17 +18,17 @@ private:
     uint32_t m_faceCount = 0;
 
 public:
-    Model(const std::string& path, bool flipV = false);
+    Model(const std::string& path, bool flipV);
     ~Model() = default;
 
-    void render(Shader& shader, const std::string& uniform);
+    void Render(Shader& shader, const std::string& uniform);
 
-    inline constexpr uint32_t getVertexCount() const { return m_vertexCount; } 
-    inline constexpr uint32_t getFaceCount() const { return m_faceCount; } 
+    inline constexpr uint32_t GetVertexCount() const { return m_vertexCount; } 
+    inline constexpr uint32_t GetFaceCount() const { return m_faceCount; } 
 
 private:
-    void load(const std::string& path);    
-    void processNode(aiNode* node, const aiScene* scene);
-    Mesh processMesh(aiMesh* mesh, const aiScene* scene);
-    std::vector<Texture2D> processMaterialTextures(aiMaterial* material, aiTextureType type, TextureType ourType);
+    void Load(const std::string& path);    
+    void ProcessNode(aiNode* node, const aiScene* scene);
+    Mesh ProcessMesh(aiMesh* mesh, const aiScene* scene);
+    std::vector<Texture2D> ProcessMaterialTextures(aiMaterial* material, aiTextureType type, TextureType ourType);
 };

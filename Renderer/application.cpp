@@ -1,11 +1,26 @@
 #include "application.h"
 
-Application::Application(int32_t width, int32_t height, const std::string& title, bool vsync)
-    : m_window(width, height, title, vsync)
+Application* Application::s_application = nullptr;
+
+Application::Application()
 {
+    Initialize();
+    s_application = this;
 }
 
-void Application::run()
+Application::~Application()
 {
-    m_window.open();
+    s_application = nullptr;
+}
+
+void Application::Initialize()
+{
+    m_window = std::make_unique<Window>(1920, 1080, "3D Renderer", false);
+    
+    std::cout << "Initializing application!\n";
+}
+
+void Application::Run()
+{
+    m_window->Open();
 }

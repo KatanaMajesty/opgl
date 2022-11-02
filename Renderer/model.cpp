@@ -6,16 +6,16 @@
 Model::Model(const std::string& path, bool flipV)
     : m_flipV(flipV)
 {
-    load(path);
+    Load(path);
 }
 
-void Model::render(Shader& shader, const std::string& uniform)
+void Model::Render(Shader& shader, const std::string& uniform)
 {
     for (Mesh& mesh : m_meshes)
-        mesh.render(shader, uniform);
+        mesh.Render(shader, uniform);
 }
 
-void Model::load(const std::string& path)
+void Model::Load(const std::string& path)
 {
     Assimp::Importer importer;
     const aiScene* scene = importer.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs);
@@ -29,28 +29,30 @@ void Model::load(const std::string& path)
     m_directory = path.substr(0, path.find_last_of('/'));
     std::cout << "Assimp: Model directory is: " << m_directory << std::endl;
 
-    processNode(scene->mRootNode, scene);
+    ProcessNode(scene->mRootNode, scene);
     std::cout << "Assimp: Model " << path << " was successfully loaded!\n";
 }
 
-void Model::processNode(aiNode* node, const aiScene* scene)
+void Model::ProcessNode(aiNode* node, const aiScene* scene)
 {
     for (size_t i = 0; i < node->mNumMeshes; i++)
     {
         aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
-        m_meshes.push_back(processMesh(mesh, scene));
+        m_meshes.push_back(ProcessMesh(mesh, scene));
     }
     for (size_t i = 0; i < node->mNumChildren; i++)
     {
-        processNode(node->mChildren[i], scene);
+        ProcessNode(node->mChildren[i], scene);
     }
 }
 
-Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene)
+Mesh Model::ProcessMesh(aiMesh* mesh, const aiScene* scene)
 {
     std::vector<Vertex> vertices;
     std::vector<GLuint> indices;
-    std::vector<Texture2D> textures;
+    std::vector<Texture2D> specularTextures;
+    std::vector<Texture2D> diffuseTextures;
+    float shininess;
 
     for (size_t i = 0; i < mesh->mNumVertices; i++)
     {
@@ -89,16 +91,20 @@ Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene)
     if (mesh->mMaterialIndex >= 0)
     {
         aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
-        std::vector<Texture2D> diffuses = processMaterialTextures(material, aiTextureType_DIFFUSE, TextureType::Diffuse);
-        std::vector<Texture2D> speculars = processMaterialTextures(material, aiTextureType_SPECULAR, TextureType::Specular);
-        textures.insert(textures.end(), diffuses.begin(), diffuses.end());
-        textures.insert(textures.end(), speculars.begin(), speculars.end());
+
+        if (material->Get(AI_MATKEY_SHININESS, shininess) != AI_SUCCESS)
+        {
+            std::cout << "Failed to parse shininess in model " << m_directory << std::endl;
+        }
+
+        diffuseTextures = ProcessMaterialTextures(material, aiTextureType_DIFFUSE, TextureType::Diffuse);
+        specularTextures = ProcessMaterialTextures(material, aiTextureType_SPECULAR, TextureType::Specular);
     }
 
-    return Mesh(std::move(vertices), std::move(indices), std::move(textures));
+    return Mesh(std::move(vertices), std::move(indices), std::move(diffuseTextures), std::move(specularTextures), shininess);
 }
 
-std::vector<Texture2D> Model::processMaterialTextures(aiMaterial* material, aiTextureType type, TextureType ourType)
+std::vector<Texture2D> Model::ProcessMaterialTextures(aiMaterial* material, aiTextureType type, TextureType ourType)
 {
     std::vector<Texture2D> textures;
     

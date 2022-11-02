@@ -28,6 +28,8 @@ private:
 	detail::CameraMovementAttrib m_movement;
 	double m_lastX = 0.0f;
 	double m_lastY = 0.0f;
+	float m_sensitivity = 0.1f;
+	bool m_first = true;
 
 public:
 	Camera(GLFWwindow* context, glm::vec3 position = glm::vec3(0.0f, 0.0f, 3.0f)
@@ -35,13 +37,19 @@ public:
 		, glm::vec3 front = glm::vec3(0.0f, 0.0f, -1.0f));
 	~Camera() = default;
 
-	inline constexpr float fov() const { return m_eulers.fov; }
-	inline constexpr glm::vec3 position() const { return m_movement.position; }
-	inline constexpr glm::vec3 front() const { return m_movement.front; }
+	inline constexpr float Fov() const { return m_eulers.fov; }
 
-	void processEulers(double x, double y, bool lockValues, bool constrainPitch = true);
-	void processMovement(int32_t direction, float delta);
-	void processScroll(float y);
-	void updateCameraVectors();
-	glm::mat4 constructLookAt() const;
+	inline constexpr glm::vec3 Position() const { return m_movement.position; }
+	
+	inline constexpr glm::vec3 Front() const { return m_movement.front; }
+
+	void UpdateEulers(double x, double y, bool lockValues, bool constrainPitch = true);
+
+	void UpdatePosition(float timeStep);
+
+	void UpdateScroll(float y);
+
+	void UpdateCameraVectors();
+
+	glm::mat4 GetLookAtMatrix() const;
 };

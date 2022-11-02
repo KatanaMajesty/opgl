@@ -1,24 +1,42 @@
 #include "window.h"
 
+Window* Window::s_window = nullptr;
+
 Window::Window(int32_t width, int32_t height, const std::string& title, bool vsync)
-    : m_width(width), m_height(height), m_title(title), m_vsync(vsync), m_context{nullptr}, m_renderManager{nullptr}
+    : m_info{
+            .width = width, 
+            .height = height, 
+            .title = title, 
+            .vsync = vsync, 
+            .cursorVisible = false, 
+            .focused = true
+        }
+    , m_renderManager{nullptr}
 {
+    if (s_window)
+    {
+        std::cout << "Window has already been created!\n";
+        return;
+    }
+    s_window = this;
+
     glfwInit();
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-    m_context = glfwCreateWindow(m_width, m_height, m_title.c_str(), nullptr, nullptr);
+    m_context = glfwCreateWindow(m_info.width, m_info.height, GetTitle().c_str(), nullptr, nullptr);
     if (!m_context)
     {
         std::cout << "Failed to create a window\n";
         return;
     }
 
-    m_renderManager = std::make_unique<RenderManager>(m_context);
+    // Window-related initialization stage
+    m_renderManager = std::unique_ptr<RenderManager>(new RenderManager(m_context));
 
     glfwMakeContextCurrent(m_context);
-	glfwSwapInterval(m_vsync);
+	glfwSwapInterval(IsVsync());
 
 	// Setup ImGui context
 	IMGUI_CHECKVERSION();
@@ -37,7 +55,15 @@ Window::Window(int32_t width, int32_t height, const std::string& title, bool vsy
     }
 
     glfwSetWindowUserPointer(m_context, this);
-	glfwSetInputMode(m_context, GLFW_CURSOR, m_cursorHidden ? GLFW_CURSOR_DISABLED : GLFW_CURSOR_NORMAL);
+	glfwSetInputMode(m_context, GLFW_CURSOR, IsCursorVisible() ? GLFW_CURSOR_NORMAL : GLFW_CURSOR_DISABLED);
+
+    // Setup window callbacks, redirecting them to our own callbacks
+    glfwSetWindowSizeCallback(m_context, [](GLFWwindow* context, int32_t width, int32_t height)
+    {
+        Window* window = Window::OfContext(context);
+        window->m_info.width = width;
+        window->m_info.height = height;
+    });
 
     glfwSetFramebufferSizeCallback(m_context, [](GLFWwindow* context, int32_t width, int32_t height)
     {
@@ -46,24 +72,26 @@ Window::Window(int32_t width, int32_t height, const std::string& title, bool vsy
 
 	glfwSetCursorPosCallback(m_context, [](GLFWwindow* context, double x, double y)
     {
-        Window* window = reinterpret_cast<Window*>(glfwGetWindowUserPointer(context));
-        window->getRenderManager().getCamera().processEulers(x, y, !window->m_cursorHidden);
-    });
-
-	glfwSetKeyCallback(m_context, [](GLFWwindow* context, int32_t key, int32_t scancode, int32_t action, int32_t mods)
-    {
-        Window* window = reinterpret_cast<Window*>(glfwGetWindowUserPointer(context));
-        if (glfwGetKey(context, GLFW_KEY_F1) == GLFW_PRESS)
-        {
-            window->m_cursorHidden = !window->m_cursorHidden;
-            glfwSetInputMode(context, GLFW_CURSOR, window->m_cursorHidden ? GLFW_CURSOR_DISABLED : GLFW_CURSOR_NORMAL);
-        }
+        Window* window = Window::OfContext(context);
+        window->ProcessCursorInput(x, y);
     });
 
 	glfwSetScrollCallback(m_context, [](GLFWwindow* context, double x, double y)
     {
-        Window* window = reinterpret_cast<Window*>(glfwGetWindowUserPointer(context));
-        window->getRenderManager().getCamera().processScroll(static_cast<float>(y));
+        Window* window = Window::OfContext(context);
+        window->ProcessScrollInput(y);
+    });
+
+    glfwSetKeyCallback(m_context, [](GLFWwindow* context, int32_t key, int32_t scancode, int32_t action, int32_t mods)
+    {
+        Window* window = Window::OfContext(context);
+        window->ProcessKeyboardInput(key, action);
+    });
+
+    glfwSetWindowFocusCallback(m_context, [](GLFWwindow* context, int32_t focused)
+    {
+        Window* window = Window::OfContext(context); 
+        window->m_info.focused = (bool) focused;
     });
 }
 
@@ -77,9 +105,8 @@ Window::~Window()
     glfwTerminate();
 }
 
-void Window::open()
+void Window::Open()
 {
-
     int glMaxAttribCount;
     glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &glMaxAttribCount);
     std::cout << "Max vertex attrib count per vertex: " << glMaxAttribCount << std::endl;
@@ -88,26 +115,27 @@ void Window::open()
 	glEnable(GL_BLEND);
     glEnable(GL_DEPTH_TEST);
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    
 
     float lastFrame = 0.0f;
     while (!glfwWindowShouldClose(m_context))
     {
 		float current = static_cast<float>(glfwGetTime());
-		float timeStep = current - lastFrame;
+		m_timeStep = current - lastFrame;
 		lastFrame = current;
 
-        glClearColor(m_clearColor.x, m_clearColor.y, m_clearColor.z, 1.0f);
+        glClearColor(0.14f, 0.15f, 0.15f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         glfwPollEvents();
 
-        update(timeStep);
+        Update(m_timeStep);
 
 		ImGui_ImplOpenGL3_NewFrame();
 		ImGui_ImplGlfw_NewFrame();
 		ImGui::NewFrame();
 
-        updateImgui(ImGui::GetIO(), timeStep);
+        UpdateImgui(ImGui::GetIO(), m_timeStep);
         
 		ImGui::Render();
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
@@ -116,6 +144,54 @@ void Window::open()
     }
 }
 
-void Window::update(float timeStep) { getRenderManager().update(timeStep); }
+void Window::Close()
+{
+    glfwSetWindowShouldClose(m_context, true);
+}
 
-void Window::updateImgui(ImGuiIO& io, float timeStep) { getRenderManager().updateImgui(io, timeStep); }
+void Window::AddKeyCallback(int32_t key, key_callback_type callback)
+{
+    m_keyboardCallbacks[key].push_back(callback);    
+}
+
+void Window::AddScrollCallback(scroll_callback_type callback)
+{
+    m_scrollCallbacks.push_back(callback);
+}
+
+void Window::AddCursorCallback(cursor_callback_type callback)
+{
+    m_cursorCallbacks.push_back(callback);
+}
+
+void Window::Update(float timeStep) 
+{ 
+    GetRenderManager().Update(timeStep); 
+}
+
+void Window::UpdateImgui(ImGuiIO& io, float timeStep) 
+{ 
+    GetRenderManager().UpdateImgui(io, timeStep); 
+}
+
+void Window::ProcessKeyboardInput(int32_t key, int32_t action)
+{
+    auto it = m_keyboardCallbacks.find(key);
+    if (it == m_keyboardCallbacks.end())
+        return;
+
+    for (key_callback_type& callback : it->second)
+        std::invoke(callback, this, m_timeStep, action);
+}
+
+void Window::ProcessScrollInput(double y)
+{
+    for (scroll_callback_type& callback : m_scrollCallbacks)
+        std::invoke(callback, this, y);
+}
+
+void Window::ProcessCursorInput(double x, double y)
+{
+    for (cursor_callback_type& callback : m_cursorCallbacks)
+        std::invoke(callback, this, x, y);
+}

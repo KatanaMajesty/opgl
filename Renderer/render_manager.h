@@ -3,26 +3,34 @@
 #include "scene.h"
 #include "camera.h"
 
+class Window;
+
+// Prbbly, rewrite whole RenderManager class, remove singleton pattern
 class RenderManager
 {
+public:
+
 private:
-    std::vector<std::unique_ptr<Scene>> m_scenes; // as we support polymorphism
-    GLFWwindow* m_context;
-    Camera m_camera;
+    RenderManager(GLFWwindow* context);
 
 public:
-    RenderManager(GLFWwindow* context);
-    ~RenderManager() = default;
+    ~RenderManager();
 
     template<typename T, typename... Args>
-    T* addScene(Args&&... args)
+    T* AddScene(Args&&... args)
     {
-        m_scenes.emplace_back(std::make_unique<T>(std::forward<Args>(args)..., m_camera));
-        return (T*) m_scenes.back().get();
+        return (T*) m_scenes.emplace_back(new T(std::forward<Args>(args)...));
     }
 
-    void update(float timeStep);
-    void updateImgui(ImGuiIO& io, float timeStep);
+    void Update(float timeStep);
 
-    inline constexpr Camera& getCamera() noexcept { return m_camera; }
+    void UpdateImgui(ImGuiIO& io, float timeStep);
+
+    inline std::vector<Scene*>& GetScenes() { return m_scenes; }
+
+private:
+    friend class Window;
+
+    std::vector<Scene*> m_scenes; // as we support polymorphism
+    GLFWwindow* m_context;
 };

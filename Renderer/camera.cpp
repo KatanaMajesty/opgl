@@ -1,5 +1,7 @@
 #include "camera.h"
 
+#include "application.h"
+
 Camera::Camera(GLFWwindow* context
     , glm::vec3 position 
     , glm::vec3 up    
@@ -8,19 +10,13 @@ Camera::Camera(GLFWwindow* context
 {
     glm::vec3 right = glm::normalize(glm::cross(up, front));
     m_movement.up = glm::normalize(glm::cross(front, right));
-    updateCameraVectors();
+    glfwGetCursorPos(m_context, &m_lastX, &m_lastY);
+
+    UpdateCameraVectors();
 }
 
-bool first = true;
-void Camera::processEulers(double x, double y, bool lockValues, bool constrainPitch)
+void Camera::UpdateEulers(double x, double y, bool lockValues, bool constrainPitch)
 {
-    if (first)
-    {
-        m_lastX = x;
-        m_lastY = y;
-        first = false;
-    }
-
 	double offsetX = x - m_lastX;
 	double offsetY = y - m_lastY;
 
@@ -30,16 +26,15 @@ void Camera::processEulers(double x, double y, bool lockValues, bool constrainPi
 	if (lockValues)
 		return;
     
-	const double sensitivity = 0.1;
-	offsetX *= sensitivity;
-	offsetY *= sensitivity;
+	offsetX *= m_sensitivity;
+	offsetY *= m_sensitivity;
 
     float& pitch = m_eulers.pitch;
     float& yaw = m_eulers.yaw;
 	yaw += static_cast<float>(offsetX);
 	pitch -= static_cast<float>(offsetY);
 
-    updateCameraVectors();
+    UpdateCameraVectors();
 
     if (constrainPitch)
     {
@@ -50,31 +45,21 @@ void Camera::processEulers(double x, double y, bool lockValues, bool constrainPi
     }
 }
 
-void Camera::processMovement(int32_t direction, float delta)
+void Camera::UpdatePosition(float timeStep)
 {
     const float cameraMultiplier = glfwGetKey(m_context, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS ? 7.5f : 2.5f;
-    const float cameraSpeed = delta * cameraMultiplier; 
-    switch (direction) {
-        case GLFW_KEY_W: {
-            m_movement.position += cameraSpeed * m_movement.front;
-            break;
-        }
-        case GLFW_KEY_S: {
-            m_movement.position -= cameraSpeed * m_movement.front;
-            break;
-        }
-        case GLFW_KEY_A: {
-            m_movement.position += cameraSpeed * glm::normalize(glm::cross(m_movement.up, m_movement.front));
-            break;
-        }
-        case GLFW_KEY_D: {
-            m_movement.position += cameraSpeed * glm::normalize(glm::cross(m_movement.front, m_movement.up)); 
-            break;
-        }
-    }
+    const float cameraSpeed = timeStep * cameraMultiplier; 
+    if (Application::IsKeyPressed(GLFW_KEY_W))
+        m_movement.position += cameraSpeed * m_movement.front;
+    if (Application::IsKeyPressed(GLFW_KEY_A))
+        m_movement.position += glm::normalize(glm::cross(m_movement.up, m_movement.front)) * cameraSpeed;
+    if (Application::IsKeyPressed(GLFW_KEY_S))
+        m_movement.position -= cameraSpeed * m_movement.front;
+    if (Application::IsKeyPressed(GLFW_KEY_D))
+        m_movement.position -= glm::normalize(glm::cross(m_movement.up, m_movement.front)) * cameraSpeed;
 }
 
-void Camera::processScroll(float y)
+void Camera::UpdateScroll(float y)
 {
     float& fov = m_eulers.fov;
     fov -= 2*y;
@@ -84,7 +69,7 @@ void Camera::processScroll(float y)
         fov = 90.0f;
 }
 
-void Camera::updateCameraVectors()
+void Camera::UpdateCameraVectors()
 {
     glm::vec3 direction;
     direction.x = cos(glm::radians(m_eulers.yaw)) * cos(glm::radians(m_eulers.pitch));
@@ -93,7 +78,7 @@ void Camera::updateCameraVectors()
     m_movement.front = glm::normalize(direction);
 }
 
-glm::mat4 Camera::constructLookAt() const
+glm::mat4 Camera::GetLookAtMatrix() const
 {
     glm::vec3 target = m_movement.position + m_movement.front;
     return glm::lookAt(m_movement.position, target, m_movement.up);

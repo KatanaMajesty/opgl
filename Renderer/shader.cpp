@@ -50,37 +50,37 @@ Shader::~Shader()
     glDeleteProgram(m_program);
 }
 
-void Shader::setUniform1i(const char* uniform, int32_t i)
+void Shader::setUniform1i(const std::string& uniform, int32_t i)
 {
     GLint loc = getUniformLocation(uniform);
     glUniform1i(loc, i);
 }
 
-void Shader::setUniform1f(const char* uniform, float f)
+void Shader::setUniform1f(const std::string& uniform, float f)
 {
 	GLint loc = getUniformLocation(uniform);
 	glUniform1f(loc, f);
 }
 
-void Shader::setUniformVec4(const char* uniform, const glm::vec4& v)
+void Shader::setUniformVec4(const std::string& uniform, const glm::vec4& v)
 {
     GLint loc = getUniformLocation(uniform);
     glUniform4fv(loc, 1, glm::value_ptr(v));
 }
 
-void Shader::setUniformVec3(const char* uniform, const glm::vec3& v)
+void Shader::setUniformVec3(const std::string& uniform, const glm::vec3& v)
 {
     GLint loc = getUniformLocation(uniform);
     glUniform3fv(loc, 1, glm::value_ptr(v));
 }
 
-void Shader::setUniformMat4(const char* uniform, const glm::mat4& m)
+void Shader::setUniformMat4(const std::string& uniform, const glm::mat4& m)
 {
 	GLint loc = getUniformLocation(uniform);
 	glUniformMatrix4fv(loc, 1, GL_FALSE, glm::value_ptr(m));
 }
 
-void Shader::setUniformSpotLight(const char* uniform, const SpotLight& light)
+void Shader::setUniformSpotLight(const std::string& uniform, const SpotLight& light)
 {
     std::string s(uniform);
     setUniform1f((s + ".cutoff").c_str(), glm::cos(glm::radians(light.cutoff)));
@@ -91,7 +91,7 @@ void Shader::setUniformSpotLight(const char* uniform, const SpotLight& light)
     setUniformVec3((s + ".diffuse").c_str(), light.diffuse);
     setUniformVec3((s + ".specular").c_str(), light.specular);
 }
-void Shader::setUniformPointLight(const char* uniform, const PointLight& light)
+void Shader::setUniformPointLight(const std::string& uniform, const PointLight& light)
 {
     std::string s(uniform);
     setUniformVec3((s + ".clq").c_str(), light.clq);
@@ -101,7 +101,7 @@ void Shader::setUniformPointLight(const char* uniform, const PointLight& light)
     setUniformVec3((s + ".specular").c_str(), light.specular);
 }
 
-void Shader::setUniformDirLight(const char* uniform, const DirectionalLight& light)
+void Shader::setUniformDirLight(const std::string& uniform, const DirectionalLight& light)
 {
     std::string s(uniform);
     setUniformVec3((s + ".dir").c_str(), light.dir);
@@ -110,17 +110,10 @@ void Shader::setUniformDirLight(const char* uniform, const DirectionalLight& lig
     setUniformVec3((s + ".specular").c_str(), light.specular);
 }
 
-GLint Shader::getUniformLocation(const char* uniform)
+GLint Shader::getUniformLocation(const std::string& uniform)
 {
-    GLint loc = glGetUniformLocation(m_program, uniform);
-    if (loc == -1)
-    {
-        // std::cout << "Failed to find uniform " << uniform << " in shader with id " << m_program << std::endl;
-    }
-
-    // auto it = m_uniformCache.find(uniform);
-    // GLint loc = it == m_uniformCache.end() ? glGetUniformLocation(m_program, uniform) : it->second;
-    // m_uniformCache.emplace(uniform, loc);
-    // return loc;
+    auto it = m_uniformCache.find(uniform);
+    GLint loc = it == m_uniformCache.end() ? glGetUniformLocation(m_program, uniform.c_str()) : it->second;
+    m_uniformCache.emplace(uniform, loc);
     return loc;
-}    
+} 
