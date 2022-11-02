@@ -12,6 +12,9 @@ struct Material
     sampler2D t_specular3;
     sampler2D t_specular4;
 
+    vec3 ambient;
+    vec3 diffuse;
+    vec3 specular;
     float shininess;
 };
 

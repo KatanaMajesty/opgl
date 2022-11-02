@@ -50,68 +50,74 @@ Shader::~Shader()
     glDeleteProgram(m_program);
 }
 
-void Shader::setUniform1i(const std::string& uniform, int32_t i)
+void Shader::SetUniform1i(const std::string& uniform, int32_t i)
 {
-    GLint loc = getUniformLocation(uniform);
+    GLint loc = GetUniformLocation(uniform);
     glUniform1i(loc, i);
 }
 
-void Shader::setUniform1f(const std::string& uniform, float f)
+void Shader::SetUniform1f(const std::string& uniform, float f)
 {
-	GLint loc = getUniformLocation(uniform);
+	GLint loc = GetUniformLocation(uniform);
 	glUniform1f(loc, f);
 }
 
-void Shader::setUniformVec4(const std::string& uniform, const glm::vec4& v)
+void Shader::SetUniformVec4(const std::string& uniform, const glm::vec4& v)
 {
-    GLint loc = getUniformLocation(uniform);
+    GLint loc = GetUniformLocation(uniform);
     glUniform4fv(loc, 1, glm::value_ptr(v));
 }
 
-void Shader::setUniformVec3(const std::string& uniform, const glm::vec3& v)
+void Shader::SetUniformVec3(const std::string& uniform, const glm::vec3& v)
 {
-    GLint loc = getUniformLocation(uniform);
+    GLint loc = GetUniformLocation(uniform);
     glUniform3fv(loc, 1, glm::value_ptr(v));
 }
 
-void Shader::setUniformMat4(const std::string& uniform, const glm::mat4& m)
+void Shader::SetUniformMat4(const std::string& uniform, const glm::mat4& m)
 {
-	GLint loc = getUniformLocation(uniform);
+	GLint loc = GetUniformLocation(uniform);
 	glUniformMatrix4fv(loc, 1, GL_FALSE, glm::value_ptr(m));
 }
 
-void Shader::setUniformSpotLight(const std::string& uniform, const SpotLight& light)
+void Shader::SetUniformSpotLight(const std::string& uniform, const SpotLight& light)
 {
-    std::string s(uniform);
-    setUniform1f((s + ".cutoff").c_str(), glm::cos(glm::radians(light.cutoff)));
-    setUniform1f((s + ".outerCutoff").c_str(), glm::cos(glm::radians(light.outerCutoff)));
-    setUniformVec3((s + ".clq").c_str(), light.clq);
-    setUniformVec3((s + ".pos").c_str(), light.pos);
-    setUniformVec3((s + ".dir").c_str(), light.dir);
-    setUniformVec3((s + ".diffuse").c_str(), light.diffuse);
-    setUniformVec3((s + ".specular").c_str(), light.specular);
+    SetUniform1f(uniform + ".cutoff", glm::cos(glm::radians(light.cutoff)));
+    SetUniform1f(uniform + ".outerCutoff", glm::cos(glm::radians(light.outerCutoff)));
+    SetUniformVec3(uniform + ".clq", light.clq);
+    SetUniformVec3(uniform + ".pos", light.pos);
+    SetUniformVec3(uniform + ".dir", light.dir);
+    SetUniformVec3(uniform + ".diffuse", light.diffuse);
+    SetUniformVec3(uniform + ".specular", light.specular);
 }
-void Shader::setUniformPointLight(const std::string& uniform, const PointLight& light)
+void Shader::SetUniformPointLight(const std::string& uniform, const PointLight& light)
 {
-    std::string s(uniform);
-    setUniformVec3((s + ".clq").c_str(), light.clq);
-    setUniformVec3((s + ".pos").c_str(), light.pos);
-    setUniformVec3((s + ".ambient").c_str(), light.ambient);
-    setUniformVec3((s + ".diffuse").c_str(), light.diffuse);
-    setUniformVec3((s + ".specular").c_str(), light.specular);
+    SetUniformVec3(uniform + ".clq", light.clq);
+    SetUniformVec3(uniform + ".pos", light.pos);
+    SetUniformVec3(uniform + ".ambient", light.ambient);
+    SetUniformVec3(uniform + ".diffuse", light.diffuse);
+    SetUniformVec3(uniform + ".specular", light.specular);
 }
 
-void Shader::setUniformDirLight(const std::string& uniform, const DirectionalLight& light)
+void Shader::SetUniformDirLight(const std::string& uniform, const DirectionalLight& light)
 {
-    std::string s(uniform);
-    setUniformVec3((s + ".dir").c_str(), light.dir);
-    setUniformVec3((s + ".ambient").c_str(), light.ambient);
-    setUniformVec3((s + ".diffuse").c_str(), light.diffuse);
-    setUniformVec3((s + ".specular").c_str(), light.specular);
+    SetUniformVec3(uniform + ".dir", light.dir);
+    SetUniformVec3(uniform + ".ambient", light.ambient);
+    SetUniformVec3(uniform + ".diffuse", light.diffuse);
+    SetUniformVec3(uniform + ".specular", light.specular);
 }
 
-GLint Shader::getUniformLocation(const std::string& uniform)
+void Shader::SetUniformMaterial(const std::string& uniform, const Material& material)
 {
+    SetUniformVec3(uniform + ".ambient", material.ambient);
+    SetUniformVec3(uniform + ".diffuse", material.diffuse);
+    SetUniformVec3(uniform + ".specular", material.specular);
+    SetUniform1f(uniform + ".shininess", material.shininess);
+}
+
+GLint Shader::GetUniformLocation(const std::string& uniform)
+{
+    Shader::Bind(*this); // just to ensure, we get uniform location in correct shader
     auto it = m_uniformCache.find(uniform);
     GLint loc = it == m_uniformCache.end() ? glGetUniformLocation(m_program, uniform.c_str()) : it->second;
     m_uniformCache.emplace(uniform, loc);

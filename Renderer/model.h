@@ -24,11 +24,15 @@ public:
     void Render(Shader& shader, const std::string& uniform);
 
     inline constexpr uint32_t GetVertexCount() const { return m_vertexCount; } 
+
     inline constexpr uint32_t GetFaceCount() const { return m_faceCount; } 
 
 private:
-    void Load(const std::string& path);    
+    void Load(const std::string& path);
+    
     void ProcessNode(aiNode* node, const aiScene* scene);
+    
     Mesh ProcessMesh(aiMesh* mesh, const aiScene* scene);
+    
     std::vector<Texture2D> ProcessMaterialTextures(aiMaterial* material, aiTextureType type, TextureType ourType);
 };

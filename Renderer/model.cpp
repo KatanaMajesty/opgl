@@ -52,9 +52,10 @@ Mesh Model::ProcessMesh(aiMesh* mesh, const aiScene* scene)
     std::vector<GLuint> indices;
     std::vector<Texture2D> specularTextures;
     std::vector<Texture2D> diffuseTextures;
-    float shininess;
+    Material material;
 
-    for (size_t i = 0; i < mesh->mNumVertices; i++)
+    m_vertexCount = mesh->mNumVertices;
+    for (size_t i = 0; i < m_vertexCount; i++)
     {
         Vertex vertex;
 
@@ -77,7 +78,6 @@ Mesh Model::ProcessMesh(aiMesh* mesh, const aiScene* scene)
         // std::cout << "texture uv!: " << vertex.textureUv.x << ", " << vertex.textureUv.y << std::endl;
 
         vertices.push_back(vertex);
-        m_vertexCount++;
     }
 
     for (size_t i = 0; i < mesh->mNumFaces; i++)
@@ -90,18 +90,18 @@ Mesh Model::ProcessMesh(aiMesh* mesh, const aiScene* scene)
 
     if (mesh->mMaterialIndex >= 0)
     {
-        aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
+        aiMaterial* mat = scene->mMaterials[mesh->mMaterialIndex];
 
-        if (material->Get(AI_MATKEY_SHININESS, shininess) != AI_SUCCESS)
-        {
-            std::cout << "Failed to parse shininess in model " << m_directory << std::endl;
-        }
+        mat->Get(AI_MATKEY_COLOR_AMBIENT, material.ambient);
+        mat->Get(AI_MATKEY_COLOR_DIFFUSE, material.diffuse);
+        mat->Get(AI_MATKEY_COLOR_SPECULAR, material.specular);
+        mat->Get(AI_MATKEY_SHININESS, material.shininess);
 
-        diffuseTextures = ProcessMaterialTextures(material, aiTextureType_DIFFUSE, TextureType::Diffuse);
-        specularTextures = ProcessMaterialTextures(material, aiTextureType_SPECULAR, TextureType::Specular);
+        diffuseTextures = ProcessMaterialTextures(mat, aiTextureType_DIFFUSE, TextureType::Diffuse);
+        specularTextures = ProcessMaterialTextures(mat, aiTextureType_SPECULAR, TextureType::Specular);
     }
 
-    return Mesh(std::move(vertices), std::move(indices), std::move(diffuseTextures), std::move(specularTextures), shininess);
+    return Mesh(std::move(vertices), std::move(indices), std::move(diffuseTextures), std::move(specularTextures), material);
 }
 
 std::vector<Texture2D> Model::ProcessMaterialTextures(aiMaterial* material, aiTextureType type, TextureType ourType)

@@ -7,67 +7,60 @@ Mesh::Mesh(std::vector<Vertex>&& vertices
         , std::vector<GLuint>&& indices
         , std::vector<Texture2D>&& diffuseTextures
         , std::vector<Texture2D>&& specularTextures
-        , float shininess)
+        , const Material& material)
     : m_vertices(std::move(vertices))
     , m_indices(std::move(indices))
     , m_diffuseTextures(std::move(diffuseTextures))
     , m_specularTextures(std::move(specularTextures))
-    , m_shininess(shininess)
+    , m_material(material)
 {
-    glCreateVertexArrays(1, &m_vao);
-    glBindVertexArray(m_vao);
+    VertexArray::Bind(m_vao);
 
-    glGenBuffers(1, &m_vbo);
-    glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(Vertex) * m_vertices.size(), m_vertices.data(), GL_STATIC_DRAW);
+    VertexBuffer::Bind(m_vbo);
+    VertexBuffer::Data(m_vertices.begin(), m_vertices.end(), GL_STATIC_DRAW);
 
-    glGenBuffers(1, &m_ibo);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ibo);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLuint) * m_indices.size(), m_indices.data(), GL_STATIC_DRAW);
+    IndexBuffer::Bind(m_ibo);
+    IndexBuffer::Data(m_indices.begin(), m_indices.end(), GL_STATIC_DRAW);
 
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*) (offsetof(Vertex, pos)));
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*) (offsetof(Vertex, normal)));
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*) (offsetof(Vertex, textureUv)));
+    // This shouldn't ever be done before VertexBuffer::Bind to currently used VAO
+    VertexArray::AddLayout(m_vao, 
+    {
+        VBLayout{3, GL_FLOAT},
+        VBLayout{3, GL_FLOAT},
+        VBLayout{2, GL_FLOAT}
+    });
 
-    glEnableVertexAttribArray(0);
-    glEnableVertexAttribArray(1);
-    glEnableVertexAttribArray(2);
-
-    glBindVertexArray(0);
+    VertexArray::Unbind();
 }
 
 void Mesh::Render(Shader& shader, const std::string& uniform)
 {
-    GLuint diffuseNum = 1;
-    GLuint specularNum = 1;
-
-    // Unbind(shader, uniform);
+    Unbind();
     BindDiffuses(shader, uniform);
     BindSpeculars(shader, uniform);
+    BindMaterial(shader, uniform);
     
-    shader.bind();
-    glBindVertexArray(m_vao);
+    VertexArray::Bind(m_vao);
     glDrawElements(GL_TRIANGLES, m_indices.size(), GL_UNSIGNED_INT, 0);
-    glBindVertexArray(0);
+    VertexArray::Unbind();
+
+    Shader::Unbind();
 }
 
 void Mesh::BindDiffuses(Shader& shader, const std::string& uniform)
 {
-    shader.bind();
 
     for (size_t i = 0; i < m_diffuseTextures.size() && i < RENDERER_MAX_DIFFUSES; i++)
     {
         Texture2D& texture = m_diffuseTextures[i];
         glActiveTexture(GL_TEXTURE0 + i);
         glBindTexture(GL_TEXTURE_2D, texture.m_id);
-        shader.setUniform1i(uniform + ".t_diffuse" + std::to_string(i + 1), i);
+        shader.SetUniform1i(uniform + ".t_diffuse" + std::to_string(i + 1), i);
     }
 }
 
 void Mesh::BindSpeculars(Shader& shader, const std::string& uniform)
 {
-    shader.bind();
-
     size_t diffSize = m_diffuseTextures.size();
     bool useDiffuses = m_specularTextures.size() == 0;
     size_t iterations = useDiffuses ? diffSize : m_specularTextures.size();
@@ -78,10 +71,13 @@ void Mesh::BindSpeculars(Shader& shader, const std::string& uniform)
         const Texture2D& texture = buffer.at(i);
         glActiveTexture(GL_TEXTURE0 + i + diffSize);
         glBindTexture(GL_TEXTURE_2D, texture.m_id);
-        shader.setUniform1i(uniform + ".t_specular" + std::to_string(i + 1), i + diffSize);
+        shader.SetUniform1i(uniform + ".t_specular" + std::to_string(i + 1), i + diffSize);
     }
-    // Move this to method BindMaterial, when implemented
-    shader.setUniform1f(uniform + ".shininess", m_shininess);
+}
+
+void Mesh::BindMaterial(Shader& shader, const std::string& uniform)
+{
+    shader.SetUniformMaterial(uniform, m_material);
 }
 
 void Mesh::Unbind()

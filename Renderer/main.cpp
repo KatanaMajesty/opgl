@@ -16,10 +16,10 @@ private:
     glm::vec3 m_rotation = glm::vec3(0.0f);
 
     DirectionalLight m_dirLight = {
-        glm::vec3(-1.0f, -2.0f, -3.0f),
-        glm::vec3(0.255f, 0.14f, 0.1f),
-        glm::vec3(0.14f, 0.1f, 0.09f),
-        glm::vec3(0.255f, 0.15f, 0.1f),
+        glm::vec3(0.7f, -0.8f, -0.6f),
+        glm::vec3(0.3f, 0.28f, 0.65f),
+        glm::vec3(1.0f, 0.25f, 0.2f),
+        glm::vec3(1.0f, 0.85f, 1.0f),
     };
 
     bool m_enableLights = true;
@@ -37,7 +37,6 @@ public:
         });
         Window::GetInstance()->AddKeyCallback(GLFW_KEY_ESCAPE, [](Window* window, float timeStep, int32_t action) { window->Close(); });
 
-        m_plant = CreateModel("../Data/Model/silver_splash/Silver_Splash_Pothos_SF.obj");
         m_backpack = CreateModel("../Data/Model/survival_backpack/backpack.obj", true);
         m_shader = CreateShader("../Data/Shader/texture_default.vert", "../Data/Shader/texture_default.frag");
     }
@@ -57,16 +56,13 @@ public:
         int32_t height = Window::GetInstance()->GetHeight();
         glm::mat4 projection = glm::perspective(glm::radians(m_camera.Fov()), (float)width/(float)height, 0.1f, 100.0f);
 
-        m_shader->bind();
-        m_shader->setUniformMat4("u_model", model);
-        m_shader->setUniformMat4("u_projection", projection);
-        m_shader->setUniformMat4("u_view", m_camera.GetLookAtMatrix());
-        m_shader->setUniform1i("u_enableLighting", m_enableLights);
-        m_shader->setUniformVec3("u_cameraPos", m_camera.Position());
-        m_shader->setUniformDirLight("u_dirLight", m_dirLight);
-        m_plant->Render(*m_shader, "u_material");
-        model = glm::translate(model, glm::vec3(5.0f, 0.0f, 0.0f));
-        m_shader->setUniformMat4("u_model", model);
+        Shader::Bind(*m_shader);
+        m_shader->SetUniformMat4("u_model", model);
+        m_shader->SetUniformMat4("u_projection", projection);
+        m_shader->SetUniformMat4("u_view", m_camera.GetLookAtMatrix());
+        m_shader->SetUniform1i("u_enableLighting", m_enableLights);
+        m_shader->SetUniformVec3("u_cameraPos", m_camera.Position());
+        m_shader->SetUniformDirLight("u_dirLight", m_dirLight);
         m_backpack->Render(*m_shader, "u_material");
     }
 
@@ -85,6 +81,11 @@ public:
         ImGui::End();
     }
 };
+
+/*
+TODO:
+- Use unordered_map instead of vector in texture caching
+*/
 
 int main() 
 {
