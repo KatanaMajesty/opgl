@@ -70,3 +70,5 @@ target_precompile_headers(${PROJECT_NAME}
     PRIVATE
         ${PROJECT_INCLUDE_DIRS}/pch.h
     )
+
+set_property(TARGET renderer PROPERTY CXX_STANDARD 20) # should be fixed and checked on other platforms
