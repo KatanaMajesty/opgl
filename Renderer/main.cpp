@@ -77,7 +77,6 @@ public:
         // m_depthShader->SetUniformMat4("u_model", model);
         // m_box->Render(*m_depthShader, "u_material");
     #else
-        glEnable(GL_STENCIL_TEST);
         glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
 
         glStencilFunc(GL_ALWAYS, 1, 0xFF);
@@ -94,7 +93,7 @@ public:
 
         glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
         glStencilMask(0x00); // disable writing to & bitmask
-        glDisable(GL_DEPTH_TEST);
+        // glDisable(GL_DEPTH_TEST);
 
         Shader::Bind(*m_stencilShader);
         model = glm::scale(model, glm::vec3(1.01f));
@@ -105,7 +104,12 @@ public:
         
         glStencilFunc(GL_ALWAYS, 1, 0xFF);
         glStencilMask(0xFF); // enable writing to & bitmask
-        glEnable(GL_DEPTH_TEST);
+        // glEnable(GL_DEPTH_TEST);
+
+        Shader::Bind(*m_shader);
+        glm::mat4 m = glm::translate(model, glm::vec3(0.0f, 0.0f, 5.0f));
+        m_shader->SetUniformMat4("u_model", m);
+        m_crate->Render(*m_shader, "u_material");
     #endif
     }
 

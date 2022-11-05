@@ -116,6 +116,8 @@ void Window::Open()
     
     glEnable(GL_DEPTH_TEST); 
     glDepthMask(GL_TRUE); // enable writing
+        
+    glEnable(GL_STENCIL_TEST);
 
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
