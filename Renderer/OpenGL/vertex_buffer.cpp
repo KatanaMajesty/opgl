@@ -1,4 +1,4 @@
-#include "Common/vertex_buffer.h"
+#include "OpenGL/vertex_buffer.h"
 
 VertexBuffer::VertexBuffer()
 {

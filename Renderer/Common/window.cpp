@@ -1,4 +1,4 @@
-#include "window.h"
+#include "Common/window.h"
 
 Window* Window::s_window = nullptr;
 
@@ -111,8 +111,8 @@ void Window::Open()
     glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &glMaxAttribCount);
     std::cout << "Max vertex attrib count per vertex: " << glMaxAttribCount << std::endl;
 
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     
     glEnable(GL_DEPTH_TEST); 
     glDepthMask(GL_TRUE); // enable writing

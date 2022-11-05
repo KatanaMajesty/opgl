@@ -1,4 +1,4 @@
-#include "Common/index_buffer.h"
+#include "OpenGL/index_buffer.h"
 
 IndexBuffer::IndexBuffer()
 {

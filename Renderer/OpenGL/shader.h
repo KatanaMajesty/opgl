@@ -1,6 +1,6 @@
 #pragma once
 
-#include "lighting.h"
+#include "Graphics/lighting.h"
 
 struct Material
 {

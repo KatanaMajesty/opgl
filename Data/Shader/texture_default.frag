@@ -52,17 +52,17 @@ in vec3 v_uv;
 
 out vec4 resultColor;
 
-vec3 calculateDirLight(DirectionalLight light, vec3 t_diff, vec3 t_spec)
+vec4 calculateDirLight(DirectionalLight light, vec4 t_diff, vec4 t_spec)
 {
     vec3 cameraToVertex = normalize(v_uv - u_cameraPos);
     vec3 dir = normalize(light.dir);
 
-    vec3 ambient = light.ambient * t_diff;
-    vec3 diffuse = light.diffuse * max(dot(v_norm, -dir), 0.0) * t_diff;
+    vec4 ambient = vec4(light.ambient, 1.0) * t_diff;
+    vec4 diffuse = vec4(light.diffuse, 1.0) * max(dot(v_norm, -dir), 0.0) * t_diff;
 
     vec3 reflectDir = reflect(dir, v_norm);
     float specComp = pow(max(dot(reflectDir, -cameraToVertex), 0.0), u_material.shininess);
-    vec3 specular = light.specular * specComp * t_spec;
+    vec4 specular = vec4(light.specular, 1.0) * specComp * t_spec;
 
     return (ambient + diffuse + specular);
 }
@@ -89,16 +89,16 @@ vec3 calculateDirLight(DirectionalLight light, vec3 t_diff, vec3 t_spec)
 
 void main()
 {
-    vec3 r = vec3(0.0);
+    vec4 r = vec4(0.0);
     if (u_enableLighting)
     {
-        vec3 t_diff = vec3(texture(u_material.t_diffuse1, v_textureUv));
-        vec3 t_spec = vec3(texture(u_material.t_specular1, v_textureUv));
+        vec4 t_diff = texture(u_material.t_diffuse1, v_textureUv);
+        vec4 t_spec = texture(u_material.t_specular1, v_textureUv);
         r += calculateDirLight(u_dirLight, t_diff, t_spec);
         // r += calculateSpotLight(u_spotLight, t_diff, t_spec);
     }
     else {
-        r = vec3(texture(u_material.t_diffuse1, v_textureUv));
+        r = texture(u_material.t_diffuse1, v_textureUv);
     }
-    resultColor = vec4(r, 1.0);
+    resultColor = r;
 }

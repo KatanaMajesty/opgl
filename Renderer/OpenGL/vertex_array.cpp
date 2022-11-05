@@ -1,4 +1,4 @@
-#include "Common/vertex_array.h"
+#include "OpenGL/vertex_array.h"
 
 VertexArray::VertexArray()
     : m_layoutIdx(0)

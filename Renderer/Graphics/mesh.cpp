@@ -1,4 +1,4 @@
-#include "mesh.h"
+#include "Graphics/mesh.h"
 
 #define RENDERER_MAX_DIFFUSES 4
 #define RENDERER_MAX_SPECULARS 4

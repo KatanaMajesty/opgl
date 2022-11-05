@@ -1,4 +1,4 @@
-#include "model.h"
+#include "Graphics/model.h"
 
 
 Model::Model(const std::string& path, bool loadTextures, bool flipV)

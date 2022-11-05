@@ -1,7 +1,7 @@
 #pragma once
 
-#include "scene.h"
-#include "camera.h"
+#include "Graphics/scene.h"
+#include "Common/camera.h"
 
 class Window;
 

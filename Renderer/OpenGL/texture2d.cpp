@@ -1,4 +1,4 @@
-#include "texture2d.h"
+#include "OpenGL/texture2d.h"
 
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>

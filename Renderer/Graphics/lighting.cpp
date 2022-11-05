@@ -1,4 +1,4 @@
-#include "lighting.h"
+#include "Graphics/lighting.h"
 
 
 DirectionalLight::DirectionalLight(glm::vec3 dir, glm::vec3 ambient, glm::vec3 diff, glm::vec3 spec)

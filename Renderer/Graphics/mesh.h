@@ -1,10 +1,10 @@
 #pragma once
 
-#include "texture2d.h"
-#include "shader.h"
-#include "Common/index_buffer.h"
-#include "Common/vertex_buffer.h"
-#include "Common/vertex_array.h"
+#include "OpenGL/texture2d.h"
+#include "OpenGL/shader.h"
+#include "OpenGL/index_buffer.h"
+#include "OpenGL/vertex_buffer.h"
+#include "OpenGL/vertex_array.h"
 
 struct Vertex
 {

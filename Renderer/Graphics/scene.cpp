@@ -1,4 +1,4 @@
-#include "scene.h"
+#include "Graphics/scene.h"
 
 Scene::Scene(GLFWwindow* context)
     : m_context(context) 

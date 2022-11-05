@@ -1,8 +1,8 @@
 #pragma once
 
-#include "model.h"
-#include "shader.h"
-#include "camera.h"
+#include "Graphics/model.h"
+#include "OpenGL/shader.h"
+#include "Common/camera.h"
 
 class Scene
 {

@@ -1,6 +1,6 @@
-#include "camera.h"
+#include "Common/camera.h"
 
-#include "application.h"
+#include "Common/application.h"
 
 Camera::Camera(GLFWwindow* context
     , glm::vec3 position 
