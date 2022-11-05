@@ -49,7 +49,6 @@ void Mesh::Render(Shader& shader, const std::string& uniform)
 
 void Mesh::BindDiffuses(Shader& shader, const std::string& uniform)
 {
-
     for (size_t i = 0; i < m_diffuseTextures.size() && i < RENDERER_MAX_DIFFUSES; i++)
     {
         Texture2D& texture = m_diffuseTextures[i];

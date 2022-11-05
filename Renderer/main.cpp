@@ -9,6 +9,7 @@ private:
     Model* m_box;
     Model* m_backpack;
     Shader* m_shader;
+    Shader* m_depthShader;
 
     Camera m_camera;
 
@@ -38,10 +39,13 @@ public:
         });
         Window::GetInstance()->AddKeyCallback(GLFW_KEY_ESCAPE, [](Window* window, float timeStep, int32_t action) { window->Close(); });
 
-        m_backpack = CreateModel("../Data/Model/survival_backpack/backpack.obj", true);
-        m_crate = CreateModel("../Data/Model/wooden_box/scene.gltf");
-        m_box = CreateModel("../Data/Model/electrical_box/scene.gltf");
+        m_backpack = CreateModel("../Data/Model/survival_backpack/backpack.obj", true, true);
+        m_crate = CreateModel("../Data/Model/wooden_box/scene.gltf", true);
+        m_box = CreateModel("../Data/Model/electrical_box/scene.gltf", false);
         m_shader = CreateShader("../Data/Shader/texture_default.vert", "../Data/Shader/texture_default.frag");
+        m_depthShader = CreateShader("../Data/Shader/depth_shader.vert", "../Data/Shader/depth_shader.frag");
+
+        glDepthFunc(GL_LESS);
     }
 
     virtual void Update(float timeStep) override
@@ -59,18 +63,29 @@ public:
         int32_t height = Window::GetInstance()->GetHeight();
         glm::mat4 projection = glm::perspective(glm::radians(m_camera.Fov()), (float)width/(float)height, 0.1f, 100.0f);
 
+    #if 1
+        Shader::Bind(*m_depthShader);
+        m_depthShader->SetUniformMat4("u_model", model);
+        m_depthShader->SetUniformMat4("u_projection", projection);
+        m_depthShader->SetUniformMat4("u_view", m_camera.GetLookAtMatrix());
+        m_crate->Render(*m_depthShader, "u_material");
+        model = glm::translate(model, glm::vec3(0.0f, 0.0f, 5.0f));
+        m_depthShader->SetUniformMat4("u_model", model);
+        m_box->Render(*m_depthShader, "u_material");
+    #else
         Shader::Bind(*m_shader);
         m_shader->SetUniformMat4("u_model", model);
         m_shader->SetUniformMat4("u_projection", projection);
         m_shader->SetUniformMat4("u_view", m_camera.GetLookAtMatrix());
+        // m_backpack->Render(*m_shader, "u_material");
         m_shader->SetUniform1i("u_enableLighting", m_enableLights);
         m_shader->SetUniformVec3("u_cameraPos", m_camera.Position());
         m_shader->SetUniformDirLight("u_dirLight", m_dirLight);
-        // m_backpack->Render(*m_shader, "u_material");
         m_crate->Render(*m_shader, "u_material");
         model = glm::translate(model, glm::vec3(0.0f, 0.0f, 5.0f));
         m_shader->SetUniformMat4("u_model", model);
         m_box->Render(*m_shader, "u_material");
+    #endif
     }
 
     virtual void UpdateImgui(ImGuiIO& io, float timeStep) override

@@ -13,12 +13,13 @@ private:
     std::unordered_map<std::string, Texture2D> m_textureCache;
     std::vector<Mesh> m_meshes;
     std::string m_directory;
+    bool m_loadTextures;
     bool m_flipV;
     uint32_t m_vertexCount = 0;
     uint32_t m_faceCount = 0;
 
 public:
-    Model(const std::string& path, bool flipV);
+    Model(const std::string& path, bool loadTextures, bool flipV);
     ~Model() = default;
 
     void Render(Shader& shader, const std::string& uniform);

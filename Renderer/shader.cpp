@@ -37,6 +37,7 @@ Shader::Shader(const std::string& vertexPath, const std::string& fragmentPath)
             std::cout << "ERROR::SHADER::COMPILATION_FAILED\n" << infoLog << std::endl;
         }
         glAttachShader(m_program, shaderId);
+        std::cout << "Shader: Successfully parsed " << v << std::endl; 
     }
     glLinkProgram(m_program);
     for (auto& pair : shaderPaths)

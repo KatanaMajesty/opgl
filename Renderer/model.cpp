@@ -1,8 +1,9 @@
 #include "model.h"
 
 
-Model::Model(const std::string& path, bool flipV)
-    : m_flipV(flipV)
+Model::Model(const std::string& path, bool loadTextures, bool flipV)
+    : m_loadTextures(loadTextures)
+    , m_flipV(flipV)
 {
     Load(path);
 }
@@ -103,6 +104,9 @@ Mesh Model::ProcessMesh(aiMesh* mesh, const aiScene* scene)
 
 std::vector<Texture2D> Model::ProcessMaterialTextures(aiMaterial* material, aiTextureType type, TextureType ourType)
 {
+    if (!m_loadTextures)
+        return {};
+        
     std::vector<Texture2D> textures;
     
     for (size_t i = 0; i < material->GetTextureCount(type); i++)

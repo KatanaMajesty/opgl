@@ -14,9 +14,9 @@ Scene::~Scene()
         delete shader;
 }
     
-Model* Scene::CreateModel(const std::string& path, bool flipV)
+Model* Scene::CreateModel(const std::string& path, bool loadTextures, bool flipV)
 {
-    return m_modelBuffer.emplace_back(new Model(path, flipV));
+    return m_modelBuffer.emplace_back(new Model(path, loadTextures, flipV));
 }
 
 Shader* Scene::CreateShader(const std::string& vert, const std::string& frag)

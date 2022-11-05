@@ -17,7 +17,7 @@ public:
     Scene(GLFWwindow* context);
     virtual ~Scene();
     
-    Model* CreateModel(const std::string& path, bool flipV = false);
+    Model* CreateModel(const std::string& path, bool loadTextures = true, bool flipV = false);
 
     Shader* CreateShader(const std::string& vert, const std::string& frag);
 
