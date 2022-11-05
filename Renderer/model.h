@@ -10,7 +10,7 @@
 class Model
 {
 private:
-    std::vector<Texture2D> m_textureCache;
+    std::unordered_map<std::string, Texture2D> m_textureCache;
     std::vector<Mesh> m_meshes;
     std::string m_directory;
     bool m_flipV;

@@ -1,7 +1,5 @@
 #include "model.h"
 
-#define STB_IMAGE_IMPLEMENTATION
-#include <stb_image.h>
 
 Model::Model(const std::string& path, bool flipV)
     : m_flipV(flipV)
@@ -75,7 +73,6 @@ Mesh Model::ProcessMesh(aiMesh* mesh, const aiScene* scene)
             tex = mesh->mTextureCoords[0][i];
         }
         vertex.textureUv = glm::vec2(tex.x, tex.y);
-        // std::cout << "texture uv!: " << vertex.textureUv.x << ", " << vertex.textureUv.y << std::endl;
 
         vertices.push_back(vertex);
     }
@@ -114,55 +111,16 @@ std::vector<Texture2D> Model::ProcessMaterialTextures(aiMaterial* material, aiTe
         material->GetTexture(type, i, &str);
 
         std::string texturePath(m_directory + '/' + str.C_Str());
-        auto it = std::find_if(m_textureCache.begin(), m_textureCache.end(), [&](Texture2D& t) { return t.m_path == texturePath; });
+        auto it = m_textureCache.find(texturePath);
 
         if (it != m_textureCache.end())
         {
-            textures.push_back(*it);
+            textures.emplace_back(it->second);
         } else 
         {
-            Texture2D texture;
-            texture.m_path = std::move(texturePath);
-            texture.m_type = ourType;
-
-            stbi_set_flip_vertically_on_load(m_flipV);
-            int32_t width;
-            int32_t height;
-            int32_t channels;
-            unsigned char* buffer = stbi_load(texture.m_path.c_str(), &width, &height, &channels, 0);
-            if (!buffer)
-            {
-                std::cout << "Failed to parse texture " << texture.m_path << std::endl;
-            }
-            std::cout << "Assimp debug: Creating a texture from filepath: " << texture.m_path << std::endl;
-            std::cout << "Texture info: w" << width << ", h" << height << ", c" << channels << std::endl; 
-            GLenum format = GL_NONE;
-            switch (channels)
-            {
-                case 1: format = GL_RED; break;
-                case 3: format = GL_RGB; break;
-                case 4: format = GL_RGBA; break;
-                default: std::cout << "INCOMPATIBLE TEXTURE FORMAT!\n";
-            }
-
-            glGenTextures(1, &texture.m_id);
-            glBindTexture(GL_TEXTURE_2D, texture.m_id);
-            
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-
-            glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, buffer);
-            glGenerateMipmap(GL_TEXTURE_2D);
-
-            glBindTexture(GL_TEXTURE_2D, 0);
-
-            stbi_image_free(buffer);
-            stbi_set_flip_vertically_on_load(false);
-
-            textures.push_back(texture);
-            m_textureCache.push_back(texture);
+            Texture2D& texture = textures.emplace_back(texturePath, ourType, m_flipV);
+            // try emplace just to ensure we're not adding unnecessary
+            m_textureCache.try_emplace(texture.GetPath(), texture);
         }
     }
 

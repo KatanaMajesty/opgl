@@ -5,7 +5,8 @@
 class PlantScene : public Scene
 {
 private:
-    Model* m_plant;
+    Model* m_crate;
+    Model* m_box;
     Model* m_backpack;
     Shader* m_shader;
 
@@ -38,6 +39,8 @@ public:
         Window::GetInstance()->AddKeyCallback(GLFW_KEY_ESCAPE, [](Window* window, float timeStep, int32_t action) { window->Close(); });
 
         m_backpack = CreateModel("../Data/Model/survival_backpack/backpack.obj", true);
+        m_crate = CreateModel("../Data/Model/wooden_box/scene.gltf");
+        m_box = CreateModel("../Data/Model/electrical_box/scene.gltf");
         m_shader = CreateShader("../Data/Shader/texture_default.vert", "../Data/Shader/texture_default.frag");
     }
 
@@ -63,7 +66,11 @@ public:
         m_shader->SetUniform1i("u_enableLighting", m_enableLights);
         m_shader->SetUniformVec3("u_cameraPos", m_camera.Position());
         m_shader->SetUniformDirLight("u_dirLight", m_dirLight);
-        m_backpack->Render(*m_shader, "u_material");
+        // m_backpack->Render(*m_shader, "u_material");
+        m_crate->Render(*m_shader, "u_material");
+        model = glm::translate(model, glm::vec3(0.0f, 0.0f, 5.0f));
+        m_shader->SetUniformMat4("u_model", model);
+        m_box->Render(*m_shader, "u_material");
     }
 
     virtual void UpdateImgui(ImGuiIO& io, float timeStep) override
