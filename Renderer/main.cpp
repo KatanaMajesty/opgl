@@ -10,6 +10,7 @@ private:
     Model* m_backpack;
     Shader* m_shader;
     Shader* m_depthShader;
+    Shader* m_stencilShader;
 
     Camera m_camera;
 
@@ -43,6 +44,7 @@ public:
         m_crate = CreateModel("../Data/Model/wooden_box/scene.gltf", true);
         m_box = CreateModel("../Data/Model/electrical_box/scene.gltf", false);
         m_shader = CreateShader("../Data/Shader/texture_default.vert", "../Data/Shader/texture_default.frag");
+        m_stencilShader = CreateShader("../Data/Shader/depth_shader.vert", "../Data/Shader/outline.frag");
         m_depthShader = CreateShader("../Data/Shader/depth_shader.vert", "../Data/Shader/depth_shader.frag");
 
         glDepthFunc(GL_LESS);
@@ -57,34 +59,53 @@ public:
         model = glm::scale(model, m_scale);
         model = glm::translate(model, m_translation);
 
+        Model* ptr = m_backpack;
+
         m_camera.UpdatePosition(timeStep);
 
         int32_t width = Window::GetInstance()->GetWidth();
         int32_t height = Window::GetInstance()->GetHeight();
         glm::mat4 projection = glm::perspective(glm::radians(m_camera.Fov()), (float)width/(float)height, 0.1f, 100.0f);
 
-    #if 1
+    #if 0
         Shader::Bind(*m_depthShader);
         m_depthShader->SetUniformMat4("u_model", model);
         m_depthShader->SetUniformMat4("u_projection", projection);
         m_depthShader->SetUniformMat4("u_view", m_camera.GetLookAtMatrix());
-        m_crate->Render(*m_depthShader, "u_material");
-        model = glm::translate(model, glm::vec3(0.0f, 0.0f, 5.0f));
-        m_depthShader->SetUniformMat4("u_model", model);
-        m_box->Render(*m_depthShader, "u_material");
+        // m_crate->Render(*m_depthShader, "u_material");
+        // model = glm::translate(model, glm::vec3(0.0f, 0.0f, 5.0f));
+        // m_depthShader->SetUniformMat4("u_model", model);
+        // m_box->Render(*m_depthShader, "u_material");
     #else
+        glEnable(GL_STENCIL_TEST);
+        glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
+
+        glStencilFunc(GL_ALWAYS, 1, 0xFF);
+        glStencilMask(0xFF); // enable writing to & bitmask
+        
         Shader::Bind(*m_shader);
         m_shader->SetUniformMat4("u_model", model);
         m_shader->SetUniformMat4("u_projection", projection);
         m_shader->SetUniformMat4("u_view", m_camera.GetLookAtMatrix());
-        // m_backpack->Render(*m_shader, "u_material");
         m_shader->SetUniform1i("u_enableLighting", m_enableLights);
         m_shader->SetUniformVec3("u_cameraPos", m_camera.Position());
         m_shader->SetUniformDirLight("u_dirLight", m_dirLight);
-        m_crate->Render(*m_shader, "u_material");
-        model = glm::translate(model, glm::vec3(0.0f, 0.0f, 5.0f));
-        m_shader->SetUniformMat4("u_model", model);
-        m_box->Render(*m_shader, "u_material");
+        ptr->Render(*m_shader, "u_material");
+
+        glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
+        glStencilMask(0x00); // disable writing to & bitmask
+        glDisable(GL_DEPTH_TEST);
+
+        Shader::Bind(*m_stencilShader);
+        model = glm::scale(model, glm::vec3(1.01f));
+        m_stencilShader->SetUniformMat4("u_model", model);
+        m_stencilShader->SetUniformMat4("u_projection", projection);
+        m_stencilShader->SetUniformMat4("u_view", m_camera.GetLookAtMatrix());
+        ptr->Render(*m_stencilShader, "u_material");
+        
+        glStencilFunc(GL_ALWAYS, 1, 0xFF);
+        glStencilMask(0xFF); // enable writing to & bitmask
+        glEnable(GL_DEPTH_TEST);
     #endif
     }
 

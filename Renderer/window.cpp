@@ -113,9 +113,11 @@ void Window::Open()
 
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glEnable(GL_BLEND);
-    glEnable(GL_DEPTH_TEST);
-    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
     
+    glEnable(GL_DEPTH_TEST); 
+    glDepthMask(GL_TRUE); // enable writing
+
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
     float lastFrame = 0.0f;
     while (!glfwWindowShouldClose(m_context))
@@ -125,7 +127,7 @@ void Window::Open()
 		lastFrame = current;
 
         glClearColor(0.14f, 0.15f, 0.15f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
         glfwPollEvents();
 
