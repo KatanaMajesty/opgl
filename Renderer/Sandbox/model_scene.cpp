@@ -1,25 +1,26 @@
-#include "model_scene.h"
+#include "Sandbox/model_scene.h"
 
 #include "Common/window.h"
 
-ModelScene::ModelScene(GLFWwindow* context) : Scene(context)
+ModelScene::ModelScene(GLFWwindow* context) : Scene(context, "Assimp Model Scene")
     , m_camera(context)
 {
     Window::GetInstance()->AddCursorCallback([&](Window* window, double x, double y) { m_camera.UpdateEulers(x, y, window->IsCursorVisible() || !window->IsFocused()); });
     Window::GetInstance()->AddScrollCallback([&](Window* window, double y) { m_camera.UpdateScroll((float) y); });
-    Window::GetInstance()->AddKeyCallback(GLFW_KEY_F1, [](Window* window, float timeStep, int32_t action)
-    {
-        if (action == GLFW_PRESS)
-            window->SetCursorVisible(!window->IsCursorVisible());
-    });
-    Window::GetInstance()->AddKeyCallback(GLFW_KEY_ESCAPE, [](Window* window, float timeStep, int32_t action) { window->Close(); });
-
+    
     AddModel("backpack", CreateModel("../Data/Model/survival_backpack/backpack.obj", true, true));
-    m_shader = CreateShader("../Data/Shader/texture_default.vert", "../Data/Shader/texture_default.frag");
-    m_stencilShader = CreateShader("../Data/Shader/depth_shader.vert", "../Data/Shader/outline.frag");
-    m_depthShader = CreateShader("../Data/Shader/depth_shader.vert", "../Data/Shader/depth_shader.frag");
 
-    glDepthFunc(GL_LESS);
+    m_shader = CreateShader("../Data/Shader/texture_default.vert", "../Data/Shader/texture_default.frag");
+}
+    
+void ModelScene::OnAttach()
+{
+    std::cout << "Model scene attach\n";
+}
+
+void ModelScene::OnDetatch()
+{
+    std::cout << "Model scene detatch\n";
 }
 
 void ModelScene::Update(float timeStep)
@@ -39,20 +40,6 @@ void ModelScene::Update(float timeStep)
     int32_t height = Window::GetInstance()->GetHeight();
     glm::mat4 projection = glm::perspective(glm::radians(m_camera.Fov()), (float)width/(float)height, 0.1f, 100.0f);
 
-#if 0
-    Shader::Bind(*m_depthShader);
-    m_depthShader->SetUniformMat4("u_model", model);
-    m_depthShader->SetUniformMat4("u_projection", projection);
-    m_depthShader->SetUniformMat4("u_view", m_camera.GetLookAtMatrix());
-    // m_crate->Render(*m_depthShader, "u_material");
-    // model = glm::translate(model, glm::vec3(0.0f, 0.0f, 5.0f));
-    // m_depthShader->SetUniformMat4("u_model", model);
-    // m_box->Render(*m_depthShader, "u_material");
-#else
-    glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
-    glStencilFunc(GL_ALWAYS, 1, 0xFF);
-    glStencilMask(0xFF); // enable writing to & bitmask
-    
     Shader::Bind(*m_shader);
     m_shader->SetUniformMat4("u_model", model);
     m_shader->SetUniformMat4("u_projection", projection);
@@ -61,22 +48,6 @@ void ModelScene::Update(float timeStep)
     m_shader->SetUniformVec3("u_cameraPos", m_camera.Position());
     m_shader->SetUniformDirLight("u_dirLight", m_dirLight);
     ptr->Render(*m_shader, "u_material");
-
-    glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
-    glStencilMask(0x00); // disable writing to & bitmask
-    glDisable(GL_DEPTH_TEST);
-
-    Shader::Bind(*m_stencilShader);
-    model = glm::scale(model, glm::vec3(1.01f));
-    m_stencilShader->SetUniformMat4("u_model", model);
-    m_stencilShader->SetUniformMat4("u_projection", projection);
-    m_stencilShader->SetUniformMat4("u_view", m_camera.GetLookAtMatrix());
-    ptr->Render(*m_stencilShader, "u_material");
-    
-    glStencilFunc(GL_ALWAYS, 1, 0xFF);
-    glStencilMask(0xFF); // enable writing to & bitmask
-    glEnable(GL_DEPTH_TEST);
-#endif
 }
 
 void ModelScene::UpdateImgui(ImGuiIO& io, float timeStep)
@@ -97,6 +68,6 @@ void ModelScene::UpdateImgui(ImGuiIO& io, float timeStep)
     ImGui::SliderFloat3("diff", glm::value_ptr(m_dirLight.diffuse), 0.0f, 1.0f);
     ImGui::SliderFloat3("spec", glm::value_ptr(m_dirLight.specular), 0.0f, 1.0f);
     ImGui::Checkbox("Enable Lights", &m_enableLights);
-
+    
     ImGui::End();
 }

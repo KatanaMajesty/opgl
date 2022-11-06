@@ -7,8 +7,6 @@ class ModelScene : public Scene
 {
 private:
     Shader* m_shader;
-    Shader* m_depthShader;
-    Shader* m_stencilShader;
     std::unordered_map<std::string, Model*> m_models;
 
     Camera m_camera;
@@ -29,8 +27,10 @@ private:
 public:
     ModelScene(GLFWwindow* context);
 
-    virtual void Update(float timeStep) override;
+    virtual void OnAttach() override;
+    virtual void OnDetatch() override;
 
+    virtual void Update(float timeStep) override;
     virtual void UpdateImgui(ImGuiIO& io, float timeStep) override;
 
     inline void AddModel(const std::string& name, Model* model) { m_models[name] = model; }
