@@ -10,6 +10,23 @@ Texture2D::Texture2D(const std::string& path, TextureType type, bool flipV)
 
     Load(flipV);
 }
+ 
+Texture2D::Texture2D(Texture2D&& other)
+    : m_id(other.m_id)
+    , m_type(other.m_type)
+    , m_path(std::move(other.m_path))
+{
+    other.m_id = 0;
+    other.m_type = TextureType::UNDEFINED;
+}
+
+Texture2D& Texture2D::operator=(Texture2D&& other)
+{
+    if (this == &other)
+        return *this;
+
+    return (*this = std::move(other));
+}
 
 void Texture2D::Load(bool flipV)
 {

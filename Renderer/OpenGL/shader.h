@@ -1,14 +1,7 @@
 #pragma once
 
 #include "Graphics/lighting.h"
-
-struct Material
-{
-    glm::vec3 ambient = glm::vec3(0.0f);
-    glm::vec3 diffuse = glm::vec3(0.0f);
-    glm::vec3 specular = glm::vec3(0.0f);
-    float shininess = 0.0f;
-};
+#include "Graphics/material.h"
 
 class Shader
 {
@@ -20,9 +13,16 @@ public:
     Shader(const std::string& vertexPath, const std::string& fragmentPath);  
     ~Shader();
 
+    Shader(const Shader& other) = delete;
+    Shader& operator=(const Shader& other) = delete;
+    Shader(Shader&& other);
+    Shader& operator=(Shader&& other);
+
     static inline void Bind(Shader& shader) { glUseProgram(shader.m_program); }
 
     static inline void Unbind() { glUseProgram(0); }
+
+    inline void Delete() { glDeleteProgram(m_program); }
     
     void SetUniform1i(const std::string& uniform, int32_t i);
 

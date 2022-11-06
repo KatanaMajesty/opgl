@@ -16,12 +16,22 @@ private:
 
 public:
     VertexArray();
+    VertexArray(VertexArray&& other) noexcept;
+    VertexArray& operator=(VertexArray&& other) noexcept;
+    ~VertexArray() = default;
 
     static inline void Bind(VertexArray& vao) { glBindVertexArray(vao.m_id); }
 
     static inline void Unbind() { glBindVertexArray(0); }
 
-    static inline void Delete(VertexArray& vao) { glDeleteVertexArrays(1, &vao.m_id); }
+    inline void Delete() 
+    { 
+        if (m_id == 0)
+            return;
+            
+        glDeleteVertexArrays(1, &m_id);
+        m_id = 0;
+    }
 
     static void AddLayout(VertexArray& vao, const std::vector<VBLayout>& layouts);
 };

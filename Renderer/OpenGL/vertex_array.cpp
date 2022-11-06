@@ -7,6 +7,22 @@ VertexArray::VertexArray()
     glCreateVertexArrays(1, &m_id);
 }
 
+VertexArray::VertexArray(VertexArray&& other) noexcept
+    : m_id(other.m_id)
+    , m_layoutIdx(other.m_layoutIdx)
+    , m_stride(other.m_stride)
+{
+    other.m_id = 0; // Important part of move constructor
+}
+    
+VertexArray& VertexArray::operator=(VertexArray&& other) noexcept
+{
+    if (this == &other)
+        return *this;
+
+    return (*this = std::move(other));
+}
+
 void VertexArray::AddLayout(VertexArray& vao, const std::vector<VBLayout>& layouts)
 {
     static const std::unordered_map<GLenum, size_t> sizeMap = {

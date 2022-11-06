@@ -48,7 +48,22 @@ Shader::Shader(const std::string& vertexPath, const std::string& fragmentPath)
 
 Shader::~Shader()
 {
-    glDeleteProgram(m_program);
+    Delete();
+}
+
+Shader::Shader(Shader&& other)
+    : m_program(other.m_program)
+    , m_uniformCache(std::move(other.m_uniformCache))
+{
+    other.m_program = 0;
+}
+
+Shader& Shader::operator=(Shader&& other)
+{
+    if (this == &other)
+        return *this;
+
+    return (*this = std::move(other));
 }
 
 void Shader::SetUniform1i(const std::string& uniform, int32_t i)
