@@ -8,6 +8,12 @@ Model::Model(const std::string& path, bool loadTextures, bool flipV)
     Load(path);
 }
 
+Model::~Model()
+{
+    for (auto& [_, texture] : m_textureCache)
+        texture.Delete();
+}
+
 void Model::Render(Shader& shader, const std::string& uniform)
 {
     for (Mesh& mesh : m_meshes)
@@ -37,7 +43,7 @@ void Model::ProcessNode(aiNode* node, const aiScene* scene)
     for (size_t i = 0; i < node->mNumMeshes; i++)
     {
         aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
-        m_meshes.push_back(ProcessMesh(mesh, scene));
+        m_meshes.push_back(std::move(ProcessMesh(mesh, scene)));
     }
     for (size_t i = 0; i < node->mNumChildren; i++)
     {
@@ -49,8 +55,8 @@ Mesh Model::ProcessMesh(aiMesh* mesh, const aiScene* scene)
 {
     std::vector<Vertex> vertices;
     std::vector<GLuint> indices;
-    std::vector<Texture2D> specularTextures;
-    std::vector<Texture2D> diffuseTextures;
+    std::vector<Texture2D*> specularTextures;
+    std::vector<Texture2D*> diffuseTextures;
     Material material;
 
     m_vertexCount = mesh->mNumVertices;
@@ -95,19 +101,19 @@ Mesh Model::ProcessMesh(aiMesh* mesh, const aiScene* scene)
         mat->Get(AI_MATKEY_COLOR_SPECULAR, material.specular);
         mat->Get(AI_MATKEY_SHININESS, material.shininess);
 
-        diffuseTextures = ProcessMaterialTextures(mat, aiTextureType_DIFFUSE, TextureType::Diffuse);
-        specularTextures = ProcessMaterialTextures(mat, aiTextureType_SPECULAR, TextureType::Specular);
+        diffuseTextures = ProcessMaterialTextures(mat, aiTextureType_DIFFUSE, TextureType::DIFFUSE);
+        specularTextures = ProcessMaterialTextures(mat, aiTextureType_SPECULAR, TextureType::SPECULAR);
     }
 
     return Mesh(std::move(vertices), std::move(indices), std::move(diffuseTextures), std::move(specularTextures), material);
 }
 
-std::vector<Texture2D> Model::ProcessMaterialTextures(aiMaterial* material, aiTextureType type, TextureType ourType)
+std::vector<Texture2D*> Model::ProcessMaterialTextures(aiMaterial* material, aiTextureType type, TextureType ourType)
 {
     if (!m_loadTextures)
         return {};
         
-    std::vector<Texture2D> textures;
+    std::vector<Texture2D*> textures;
     
     for (size_t i = 0; i < material->GetTextureCount(type); i++)
     {
@@ -119,12 +125,13 @@ std::vector<Texture2D> Model::ProcessMaterialTextures(aiMaterial* material, aiTe
 
         if (it != m_textureCache.end())
         {
-            textures.emplace_back(it->second);
-        } else 
+            textures.emplace_back(std::addressof(it->second));
+        }
+        else 
         {
-            Texture2D& texture = textures.emplace_back(texturePath, ourType, m_flipV);
             // try emplace just to ensure we're not adding unnecessary
-            m_textureCache.try_emplace(texture.GetPath(), texture);
+            auto [iter, _] = m_textureCache.try_emplace(texturePath, Texture2D(texturePath, ourType, m_flipV));
+            textures.emplace_back(std::addressof(iter->second));
         }
     }
 

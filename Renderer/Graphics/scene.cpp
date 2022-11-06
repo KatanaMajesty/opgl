@@ -1,7 +1,7 @@
 #include "Graphics/scene.h"
 
-Scene::Scene(GLFWwindow* context)
-    : m_context(context) 
+Scene::Scene(GLFWwindow* context, const std::string& name)
+    : m_context(context), m_name(name)
 {
 }
 

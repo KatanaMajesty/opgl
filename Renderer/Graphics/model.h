@@ -20,7 +20,7 @@ private:
 
 public:
     Model(const std::string& path, bool loadTextures, bool flipV);
-    ~Model() = default;
+    ~Model();
 
     void Render(Shader& shader, const std::string& uniform);
 
@@ -35,5 +35,5 @@ private:
     
     Mesh ProcessMesh(aiMesh* mesh, const aiScene* scene);
     
-    std::vector<Texture2D> ProcessMaterialTextures(aiMaterial* material, aiTextureType type, TextureType ourType);
+    std::vector<Texture2D*> ProcessMaterialTextures(aiMaterial* material, aiTextureType type, TextureType ourType);
 };
