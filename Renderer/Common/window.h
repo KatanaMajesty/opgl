@@ -63,12 +63,15 @@ public:
     inline bool IsKeyPressed(int32_t key) const { return glfwGetKey(m_context, key); }
 
     template<typename T, typename... Args>
-    T* AddScene(Args&&... args)
+    T* RegisterScene(Args&&... args)
     {
         if (!m_renderManager)
+        {
+            std::cout << "Render Manager is NULL!\n";
             return nullptr;
-            
-        return GetRenderManager().AddScene<T>(m_context, std::forward<Args>(args)...);
+        }
+   
+        return GetRenderManager().RegisterScene<T>(m_context, std::forward<Args>(args)...);
     }
 
     void AddKeyCallback(int32_t key, key_callback_type callback);
@@ -78,6 +81,8 @@ public:
     void AddCursorCallback(cursor_callback_type callback);
 
 private:
+    void InitializeCallbacks();
+
     void ProcessKeyboardInput(int32_t key, int32_t action);
 
     void ProcessScrollInput(double y);

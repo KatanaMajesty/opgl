@@ -54,45 +54,7 @@ Window::Window(int32_t width, int32_t height, const std::string& title, bool vsy
         return;
     }
 
-    glfwSetWindowUserPointer(m_context, this);
-	glfwSetInputMode(m_context, GLFW_CURSOR, IsCursorVisible() ? GLFW_CURSOR_NORMAL : GLFW_CURSOR_DISABLED);
-
-    // Setup window callbacks, redirecting them to our own callbacks
-    glfwSetWindowSizeCallback(m_context, [](GLFWwindow* context, int32_t width, int32_t height)
-    {
-        Window* window = Window::OfContext(context);
-        window->m_info.width = width;
-        window->m_info.height = height;
-    });
-
-    glfwSetFramebufferSizeCallback(m_context, [](GLFWwindow* context, int32_t width, int32_t height)
-    {
-        glViewport(0, 0, width, height);
-    });
-
-	glfwSetCursorPosCallback(m_context, [](GLFWwindow* context, double x, double y)
-    {
-        Window* window = Window::OfContext(context);
-        window->ProcessCursorInput(x, y);
-    });
-
-	glfwSetScrollCallback(m_context, [](GLFWwindow* context, double x, double y)
-    {
-        Window* window = Window::OfContext(context);
-        window->ProcessScrollInput(y);
-    });
-
-    glfwSetKeyCallback(m_context, [](GLFWwindow* context, int32_t key, int32_t scancode, int32_t action, int32_t mods)
-    {
-        Window* window = Window::OfContext(context);
-        window->ProcessKeyboardInput(key, action);
-    });
-
-    glfwSetWindowFocusCallback(m_context, [](GLFWwindow* context, int32_t focused)
-    {
-        Window* window = Window::OfContext(context); 
-        window->m_info.focused = (bool) focused;
-    });
+    InitializeCallbacks();
 }
 
 Window::~Window()
@@ -176,6 +138,49 @@ void Window::Update(float timeStep)
 void Window::UpdateImgui(ImGuiIO& io, float timeStep) 
 { 
     GetRenderManager().UpdateImgui(io, timeStep); 
+}
+
+void Window::InitializeCallbacks()
+{
+    glfwSetWindowUserPointer(m_context, this);
+	glfwSetInputMode(m_context, GLFW_CURSOR, IsCursorVisible() ? GLFW_CURSOR_NORMAL : GLFW_CURSOR_DISABLED);
+
+    // Setup window callbacks, redirecting them to our own callbacks
+    glfwSetWindowSizeCallback(m_context, [](GLFWwindow* context, int32_t width, int32_t height)
+    {
+        Window* window = Window::OfContext(context);
+        window->m_info.width = width;
+        window->m_info.height = height;
+    });
+
+    glfwSetFramebufferSizeCallback(m_context, [](GLFWwindow* context, int32_t width, int32_t height)
+    {
+        glViewport(0, 0, width, height);
+    });
+
+	glfwSetCursorPosCallback(m_context, [](GLFWwindow* context, double x, double y)
+    {
+        Window* window = Window::OfContext(context);
+        window->ProcessCursorInput(x, y);
+    });
+
+	glfwSetScrollCallback(m_context, [](GLFWwindow* context, double x, double y)
+    {
+        Window* window = Window::OfContext(context);
+        window->ProcessScrollInput(y);
+    });
+
+    glfwSetKeyCallback(m_context, [](GLFWwindow* context, int32_t key, int32_t scancode, int32_t action, int32_t mods)
+    {
+        Window* window = Window::OfContext(context);
+        window->ProcessKeyboardInput(key, action);
+    });
+
+    glfwSetWindowFocusCallback(m_context, [](GLFWwindow* context, int32_t focused)
+    {
+        Window* window = Window::OfContext(context); 
+        window->m_info.focused = (bool) focused;
+    });
 }
 
 void Window::ProcessKeyboardInput(int32_t key, int32_t action)

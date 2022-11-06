@@ -5,10 +5,11 @@
 
 class Window;
 
-// Prbbly, rewrite whole RenderManager class, remove singleton pattern
 class RenderManager
 {
 public:
+    using value_type = Scene;
+    using container_type = std::vector<value_type*>;
 
 private:
     RenderManager(GLFWwindow* context);
@@ -17,20 +18,31 @@ public:
     ~RenderManager();
 
     template<typename T, typename... Args>
-    T* AddScene(Args&&... args)
+    T* RegisterScene(Args&&... args)
     {
-        return (T*) m_scenes.emplace_back(new T(std::forward<Args>(args)...));
+        Scene* scene = m_scenes.emplace_back(new T(std::forward<Args>(args)...));
+        if (m_scenes.size() == 1)
+            m_currentScene = scene;
+            
+        return (T*) scene;
     }
 
     void Update(float timeStep);
-
     void UpdateImgui(ImGuiIO& io, float timeStep);
 
-    inline std::vector<Scene*>& GetScenes() { return m_scenes; }
+    inline container_type& GetScenes() { return m_scenes; }
+    
+    inline void SetCurrentScene(Scene* scene);
+    inline value_type* GetCurrentScene() { return m_currentScene; }
+
+    inline void SetMenuEnabled(bool v) { m_menuEnabled = v; } 
+    inline bool IsMenuEnabled() const { return m_menuEnabled; }
 
 private:
-    friend class Window;
+    friend class Window; // in order to access the private constructor
 
-    std::vector<Scene*> m_scenes; // as we support polymorphism
+    container_type m_scenes; // as we support polymorphism
+    value_type* m_currentScene = nullptr;
+    bool m_menuEnabled = false;
     GLFWwindow* m_context;
 };
