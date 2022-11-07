@@ -41,9 +41,7 @@ public:
 
 private:
     void BindDiffuses(Shader& shader, const std::string& uniform);
-
     void BindSpeculars(Shader& shader, const std::string& uniform);
-
     void BindMaterial(Shader& shader, const std::string& uniform);
 
     void Unbind();

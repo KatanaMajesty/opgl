@@ -25,10 +25,7 @@ public:
     ~Window();
 
     void Open();
-
     void Close();
-
-    static inline Window* GetInstance() { return s_window; }
 
     static inline Window* OfContext(GLFWwindow* context) { return (Window*) glfwGetWindowUserPointer(context); }
 
@@ -37,7 +34,6 @@ public:
     inline constexpr GLFWwindow* GetContext() { return m_context; }
 
     inline constexpr int32_t GetWidth() const { return m_info.width; }
-
     inline constexpr int32_t GetHeight() const { return m_info.height; }
 
     inline constexpr const std::string& GetTitle() const { return m_info.title; }
@@ -45,7 +41,6 @@ public:
     inline constexpr bool IsVsync() const { return m_info.vsync; }
 
     inline constexpr bool IsCursorVisible() const { return m_info.cursorVisible; }
-
     inline void SetCursorVisible(bool visible) 
     { 
         m_info.cursorVisible = visible; 
@@ -53,7 +48,6 @@ public:
     } 
 
     inline constexpr bool IsFocused() const { return m_info.focused; }
-
     inline void SetFocused(bool focused)
     {
         m_info.focused = true;
@@ -75,27 +69,20 @@ public:
     }
 
     void AddKeyCallback(int32_t key, key_callback_type callback);
-
     void AddScrollCallback(scroll_callback_type callback);
-
     void AddCursorCallback(cursor_callback_type callback);
 
 private:
     void InitializeCallbacks();
 
     void ProcessKeyboardInput(int32_t key, int32_t action);
-
     void ProcessScrollInput(double y);
-
     void ProcessCursorInput(double x, double y);
 
     void Update(float timeStep);
-
     void UpdateImgui(ImGuiIO& io, float timeStep);
 
 private:
-    static Window* s_window;
-
     WindowInfo m_info;
     GLFWwindow* m_context;
     std::unique_ptr<RenderManager> m_renderManager;

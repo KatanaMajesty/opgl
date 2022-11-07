@@ -32,8 +32,6 @@ private:
     void Load(const std::string& path);
     
     void ProcessNode(aiNode* node, const aiScene* scene);
-    
     Mesh ProcessMesh(aiMesh* mesh, const aiScene* scene);
-    
     std::vector<Texture2D*> ProcessMaterialTextures(aiMaterial* material, aiTextureType type, TextureType ourType);
 };

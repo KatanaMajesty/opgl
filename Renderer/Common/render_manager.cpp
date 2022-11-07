@@ -34,7 +34,6 @@ void RenderManager::Update(float timeStep)
 
 void RenderManager::UpdateImgui(ImGuiIO& io, float timeStep)
 {
-    // if no current scene selected, we render our own ImGui menu
     if (!m_menuEnabled)
     {
         ImGui::Begin("Render Manager");
@@ -42,8 +41,6 @@ void RenderManager::UpdateImgui(ImGuiIO& io, float timeStep)
         ImGui::Text("Select Scene to be rendered");
         if (ImGui::BeginTable("Scene List", 1, ImGuiTableFlags_Resizable | ImGuiTableFlags_NoSavedSettings | ImGuiTableFlags_Borders))
         {
-            ImGui::TableHeadersRow();
-            ImGui::TableSetColumnIndex(0); ImGui::Text("Scene Name");
             ImGui::TableNextRow();
             for (size_t i = 0; i < m_scenes.size(); i++)
             {
@@ -51,16 +48,14 @@ void RenderManager::UpdateImgui(ImGuiIO& io, float timeStep)
                 ImGui::TableSetColumnIndex(0);
                 if (ImGui::Selectable(scene->GetName().c_str(), scene == m_currentScene))
                 {
-                    std::cout << "Selected scene " << scene->GetName() << std::endl;
+                    std::cout << "ImGui: Selected scene " << scene->GetName() << std::endl;
                     SetCurrentScene(scene);
                 }
-                ImGui::TableNextRow();
             }
             ImGui::EndTable();
         }
 
         ImGui::End();
-        return;   
     }
 
     if (m_currentScene)    

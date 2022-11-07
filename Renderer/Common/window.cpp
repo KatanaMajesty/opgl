@@ -1,7 +1,5 @@
 #include "Common/window.h"
 
-Window* Window::s_window = nullptr;
-
 Window::Window(int32_t width, int32_t height, const std::string& title, bool vsync)
     : m_info{
             .width = width, 
@@ -13,13 +11,6 @@ Window::Window(int32_t width, int32_t height, const std::string& title, bool vsy
         }
     , m_renderManager{nullptr}
 {
-    if (s_window)
-    {
-        std::cout << "Window has already been created!\n";
-        return;
-    }
-    s_window = this;
-
     glfwInit();
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
@@ -73,9 +64,6 @@ void Window::Open()
     glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &glMaxAttribCount);
     std::cout << "Max vertex attrib count per vertex: " << glMaxAttribCount << std::endl;
 
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    
     glEnable(GL_DEPTH_TEST); 
     glDepthMask(GL_TRUE); // enable writing
         

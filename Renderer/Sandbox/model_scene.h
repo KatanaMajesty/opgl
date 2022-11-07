@@ -27,9 +27,6 @@ private:
 public:
     ModelScene(GLFWwindow* context);
 
-    virtual void OnAttach() override;
-    virtual void OnDetatch() override;
-
     virtual void Update(float timeStep) override;
     virtual void UpdateImgui(ImGuiIO& io, float timeStep) override;
 

@@ -19,11 +19,10 @@ public:
     virtual ~Scene();
     
     Model* CreateModel(const std::string& path, bool loadTextures = true, bool flipV = false);
-
     Shader* CreateShader(const std::string& vert, const std::string& frag);
 
-    inline virtual void OnAttach() {};
-    inline virtual void OnDetatch() {};
+    inline virtual void OnAttach() { std::cout << "Scene: Attaching " << m_name << " scene!\n"; };
+    inline virtual void OnDetatch() { std::cout << "Scene: Detatching " << m_name << " scene!\n"; };
 
     inline virtual void Update(float timeStep) {}
     inline virtual void UpdateImgui(ImGuiIO& io, float timeStep) {}

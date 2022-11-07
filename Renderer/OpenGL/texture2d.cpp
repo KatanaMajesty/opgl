@@ -3,12 +3,12 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 
-Texture2D::Texture2D(const std::string& path, TextureType type, bool flipV)
+Texture2D::Texture2D(const std::string& path, TextureType type, bool flipV, GLint wrapParam)
     : m_type(type), m_path(path)
 {
     glGenTextures(1, &m_id);
 
-    Load(flipV);
+    Load(flipV, wrapParam);
 }
  
 Texture2D::Texture2D(Texture2D&& other)
@@ -28,7 +28,7 @@ Texture2D& Texture2D::operator=(Texture2D&& other)
     return (*this = std::move(other));
 }
 
-void Texture2D::Load(bool flipV)
+void Texture2D::Load(bool flipV, GLint wrapParam)
 {
     stbi_set_flip_vertically_on_load(flipV);
 
@@ -56,8 +56,8 @@ void Texture2D::Load(bool flipV)
     
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrapParam);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrapParam);
 
     glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, buffer);
     glGenerateMipmap(GL_TEXTURE_2D);

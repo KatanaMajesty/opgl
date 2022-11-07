@@ -22,7 +22,10 @@ public:
     {
         Scene* scene = m_scenes.emplace_back(new T(std::forward<Args>(args)...));
         if (m_scenes.size() == 1)
+        {
+            scene->OnAttach();
             m_currentScene = scene;
+        }
             
         return (T*) scene;
     }
