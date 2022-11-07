@@ -15,7 +15,6 @@ This is my toy OpenGL Engine that was written for learning purposes. Initially t
 - Scene buffer, that allows switching between scenes
 - Responsive Window object (GLFW)
 - OpenGL wrappers (Unfinished)
-- 2D debug utilities: light, sound, object bounds, lines, rectangles and etc.
 
 ## Screenshots
 
