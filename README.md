@@ -18,13 +18,19 @@ This is my toy OpenGL Engine that written for learning. Initially this is a trai
 - 2D debug utilities: light, sound, object bounds, lines, rectangles and etc.
 
 ## Screenshots
-<p align="center">
-<img src="repo_images/model_scene.png>
-<i>Model Scene with lights, usage of specular and diffuse textures</i>
+
           
-<img src="repo_images/stencil_scene.png>
+![model_scene](repo_images/model_scene.png)
+<p align="center">
+<i>Model Scene with lights, usage of specular and diffuse textures</i>
+</p>
+          
+![stencil_scene](repo_images/stencil_scene.png)
+<p align="center">
 <i>Model's outline using stencil buffer</i>
-  
-<img src="repo_images/blend_scene.png>
+</p>
+
+![blend_scene](repo_images/blend_scene.png)
+<p align="center">
 <i>PNG Texture2D blending using OpenGL function calls</i>
 </p>
