@@ -1,4 +1,4 @@
-This is my toy OpenGL Engine that written for learning. Initially this is a training project that is aimed at gaining more experience in graphics programming.
+This is my toy OpenGL Engine that was written for learning purposes. Initially this is a training project that is aimed at gaining more experience in graphics programming.
 
 ## External Dependencies
 - [assimp](https://github.com/assimp/assimp)
